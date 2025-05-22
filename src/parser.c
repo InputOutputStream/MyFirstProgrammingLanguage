@@ -20,7 +20,7 @@ parser_t *init_parser(lexer_t *lexer){
     }
     parser->lexer = lexer;
     parser->current_token = lexer_get_next_token(lexer);
-
+    parser->previous_token = parser->current_token;
     return parser;
 }
 
@@ -28,6 +28,7 @@ void parser_eat(parser_t *parser, int token_type)
 {
     if ((int)parser->current_token->type == token_type)
     {
+        parser->previous_token = parser->current_token;
         parser->current_token = lexer_get_next_token(parser->lexer);
     }
     else{
@@ -107,22 +108,55 @@ ast_t *parser_parse_expression(parser_t *parser){
             return parser_parse_string(parser);
             break;
         
+        case TOKEN_ID:
+            return parser_parse_id(parser);           
+            break;
+        
         default:
             break;
     }
 
 }
 
+/*
 ast_t *parser_parse_factor(parser_t *parser){
 
 }
 
 ast_t *parser_parse_term(parser_t *parser){
 
-}
+}*/
 
 ast_t *parser_parse_function_call(parser_t *parser){
+    if(parser == NULL)
+    {
+        fprintf(stderr, "Error: NULL Parser encountered\n");
+        exit(EXIT_FAILURE);
+    }
 
+    ast_t * function_call = init_ast(AST_FUNCTION_CALL);
+    function_call->funtion_call_name = parser->previous_token->value;
+    parser_eat(parser, TOKEN_LPAREN);
+    function_call->funtion_call_arguments = calloc(1, sizeof(struct AST_STRUCT*));
+    
+    ast_t *ast_expression = parser_parse_expression(parser);
+    function_call->funtion_call_arguments[0] = ast_expression;
+
+    while (parser->current_token->type == TOKEN_COMMA)
+    {
+        parser_eat(parser, TOKEN_COMMA);
+        ast_t *ast_expression = parser_parse_expression(parser);
+        function_call->funtion_call_arguments_size++;
+        function_call->funtion_call_arguments = realloc(
+            function_call->funtion_call_arguments, 
+            function_call->funtion_call_arguments_size*sizeof(struct AST_STRUCT*)
+            );
+
+        function_call->funtion_call_arguments[function_call->funtion_call_arguments_size-1] = ast_expression;
+    }
+    parser_eat(parser, TOKEN_RPAREN);
+
+    return function_call;
 }
 
 ast_t *parser_parse_variable(parser_t *parser){
