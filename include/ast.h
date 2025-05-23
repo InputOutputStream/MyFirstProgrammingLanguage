@@ -11,6 +11,7 @@ typedef struct AST_STRUCT
         AST_VARIABLE,     
         AST_STRING,
         AST_COMPOUND, // List of multiple statements[nodes]
+        AST_NOOP,
     }type;
 
     /**Ast Variable definition */

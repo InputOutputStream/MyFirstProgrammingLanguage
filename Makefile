@@ -3,7 +3,7 @@ INCLUDE = include
 TEST = test
 OBJ = obj
 BIN = bin
-TARGET = run
+TARGET = edu
 
 LIB_SRC = $(wildcard $(SRC)/*.c)
 TEST_SRC = $(wildcard $(TEST)/*.c)
@@ -13,11 +13,13 @@ TEST_OBJ = $(patsubst $(TEST)/%.c,$(OBJ)/%.o,$(TEST_SRC))
 
 TEST_BIN = $(BIN)/test_suite
 
-CC = gcc
-CFLAGS = -std=c11 -Wall -Wextra -pedantic -g -fPIC -I$(INCLUDE) 
+CC = clang
+CFLAGS = -std=c11 -Wall -Wextra -pedantic -g -fPIC -I$(INCLUDE) -Wno-newline-eof
 
 all: directories compile
 
+run: all
+	./$(BIN)/$(TARGET)
 compile: $(LIB_OBJ)
 	$(CC) -o $(BIN)/$(TARGET) $(LIB_OBJ) $(CDFLAGS)
 

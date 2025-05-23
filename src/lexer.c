@@ -9,7 +9,9 @@
 
 lexer_t *init_lexer(char *contents){
     if(contents == NULL)
-        return NULL;
+    {
+        return NULL;   
+    }
 
     lexer_t *lexer = calloc(1, sizeof(struct LEXER_STRUCT));
     if(lexer == NULL)
@@ -26,7 +28,9 @@ lexer_t *init_lexer(char *contents){
 
 void lexer_advance(lexer_t *lexer){
     if(lexer == NULL)
-        return;
+    {
+        return;   
+    }
 
     if(lexer->i < strlen(lexer->contents) - 1)
     {
@@ -39,7 +43,19 @@ void lexer_advance(lexer_t *lexer){
     }
 }
 
+void lexer_skip_carriage(lexer_t *lexer)
+{
+    if(lexer == NULL)
+        return;
 
+    while(lexer->c == 13 || lexer->c == '\r')
+    {
+        fprintf(stderr, "i am here");
+        lexer_advance(lexer);
+        if(lexer->c == '\0')
+            break;
+    }   
+}
 void lexer_skip_white_space(lexer_t *lexer){
     if(lexer == NULL)
         return;
@@ -69,10 +85,9 @@ token_t *lexer_get_next_token(lexer_t *lexer)
  
         if(isalnum(lexer->c))
             return lexer_collect_id(lexer);
-
+        
         if(lexer->c == '"')
             return lexer_collect_string(lexer);
-       
 
         switch(lexer->c)
         {
@@ -124,6 +139,7 @@ token_t *lexer_collect_string(lexer_t *lexer){
         fprintf(stderr, "Error: Lexer Advance Allocation object creation failed\n");
         exit(EXIT_FAILURE);
     }
+
     value[0] = '\0';
     while(lexer->c != '"' && lexer->c != '\0')
     {
@@ -135,7 +151,7 @@ token_t *lexer_collect_string(lexer_t *lexer){
     
     if(lexer->c != '"')
     {
-        // Error: Unterminated string literal
+        fprintf(stderr, "ERROR: Unterminated string literal!\n");
         free(value);
         return NULL;
     }

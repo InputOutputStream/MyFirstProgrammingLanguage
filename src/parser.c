@@ -44,6 +44,8 @@ ast_t *parser_parse(parser_t *parser){
         fprintf(stderr, "Error: NULL Parser encountered\n");
         exit(EXIT_FAILURE);
     }
+
+
     return parser_parse_statements(parser);
 }
 
@@ -53,43 +55,51 @@ ast_t *parser_parse_statement(parser_t *parser){
         fprintf(stderr, "Error: NULL Parser encountered\n");
         exit(EXIT_FAILURE);
     }
+
     switch (parser->current_token->type)
     {
         case TOKEN_ID:
+
             return parser_parse_id(parser);           
             break;
-        
-        default:
-            break;
     }
-
-    return NULL;
+    return init_ast(AST_NOOP);
 }
 
 ast_t *parser_parse_statements(parser_t *parser){
 
+    if(parser == NULL || parser->current_token == NULL)
+    {
+        fprintf(stderr, "Error: NULL TOKEN ENCOUNTERED!\n");
+        exit(EXIT_FAILURE);
+    }
+
     ast_t *compound = init_ast(AST_COMPOUND);
     ast_t *ast_statement = parser_parse_statement(parser);
 
+    
     compound->compound_value = calloc(1, sizeof(struct AST_STRUCT));
     compound->compound_value[0] = ast_statement;
-
-    fprintf(stdout, "%s\n", parser->current_token->value);
+    compound->compound_size++;
 
     while (parser->current_token->type == TOKEN_SEMI)
     {
         parser_eat(parser, TOKEN_SEMI);
-        ast_t *ast_statement = parser_parse_statement(parser);
-        compound->compound_size++;
-        compound->compound_value = realloc(
-            compound->compound_value, 
-            compound->compound_size*sizeof(struct AST_STRUCT*)
-            );
 
-        compound->compound_value[compound->compound_size-1] = ast_statement;
+        ast_t *ast_statement = parser_parse_statement(parser);
+        
+        if(ast_statement){
+            compound->compound_size++;
+            compound->compound_value = realloc(
+                compound->compound_value, 
+                compound->compound_size*sizeof(struct AST_STRUCT*)
+                );
+        
+                compound->compound_value[compound->compound_size-1] = ast_statement;
+        }
+
     }
 
-   
     return compound;   
 }
 
@@ -100,8 +110,6 @@ ast_t *parser_parse_expression(parser_t *parser){
             exit(EXIT_FAILURE);
         }
 
-
-    printf("parser value  = %s\n", parser->current_token->value);
     switch (parser->current_token->type)
     {
         case TOKEN_STRING:
@@ -111,11 +119,9 @@ ast_t *parser_parse_expression(parser_t *parser){
         case TOKEN_ID:
             return parser_parse_id(parser);           
             break;
-        
-        default:
-            break;
     }
 
+    return init_ast(AST_NOOP);
 }
 
 /*
@@ -141,6 +147,7 @@ ast_t *parser_parse_function_call(parser_t *parser){
     
     ast_t *ast_expression = parser_parse_expression(parser);
     function_call->funtion_call_arguments[0] = ast_expression;
+    function_call->funtion_call_arguments_size++;
 
     while (parser->current_token->type == TOKEN_COMMA)
     {

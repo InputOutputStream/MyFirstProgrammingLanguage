@@ -19,6 +19,7 @@ typedef struct LEXER_STRUCT
 lexer_t *init_lexer(char *contents);
 void lexer_advance(lexer_t *lexer);
 void lexer_skip_white_space(lexer_t *lexer);
+void lexer_skip_carriage(lexer_t *lexer);
 token_t *lexer_get_next_token(lexer_t *lexer);
 token_t *lexer_collect_string(lexer_t *lexer);
 token_t *lexer_collect_id(lexer_t *lexer);

@@ -35,5 +35,3 @@ ast_t *init_ast(int type){
     ast->compound_size = 0;
     return ast;
 }
-
- 
