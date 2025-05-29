@@ -13,9 +13,9 @@ int main(int argc, char **argv)
         fprintf(stderr, "Usage: ./edu <file.edu>\n");
         exit(EXIT_FAILURE);
     }
-
+  		
     lexer_t *lexer = init_lexer(
-  		get_file(argv[1])
+        get_file(argv[1])
     );
 
     parser_t *parser = init_parser(lexer);

@@ -48,9 +48,8 @@ void lexer_skip_carriage(lexer_t *lexer)
     if(lexer == NULL)
         return;
 
-    while(lexer->c == 13 || lexer->c == '\r')
+    while(lexer->c == '\r' || lexer->c == 13)
     {
-        fprintf(stderr, "i am here");
         lexer_advance(lexer);
         if(lexer->c == '\0')
             break;
@@ -72,16 +71,13 @@ void lexer_skip_white_space(lexer_t *lexer){
 
 token_t *lexer_get_next_token(lexer_t *lexer)
 {
-    if(lexer == NULL)
-        return NULL;
-
-    if(lexer->c == '\0')
-        return NULL;
-
     while(lexer->c not '\0' and lexer->i < strlen(lexer->contents))
     {
         if(lexer->c == ' ' or lexer->c == 10)
             lexer_skip_white_space(lexer);
+
+        if(lexer->c == 13 or lexer->c == '\r')
+            lexer_skip_carriage(lexer);
  
         if(isalnum(lexer->c))
             return lexer_collect_id(lexer);

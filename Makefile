@@ -14,7 +14,7 @@ TEST_OBJ = $(patsubst $(TEST)/%.c,$(OBJ)/%.o,$(TEST_SRC))
 TEST_BIN = $(BIN)/test_suite
 
 CC = clang
-CFLAGS = -std=c11 -Wall -Wextra -pedantic -g -fPIC -I$(INCLUDE) -Wno-newline-eof
+CFLAGS = -std=c23 -Wall -Wextra -pedantic -g -fPIC -I$(INCLUDE) -Wno-newline-eof
 
 all: directories compile
 

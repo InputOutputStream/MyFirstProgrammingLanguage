@@ -45,11 +45,13 @@ ast_t *parser_parse(parser_t *parser){
         exit(EXIT_FAILURE);
     }
 
-
     return parser_parse_statements(parser);
 }
 
 ast_t *parser_parse_statement(parser_t *parser){
+
+    static int i = 0;
+
     if(parser == NULL)
     {
         fprintf(stderr, "Error: NULL Parser encountered\n");
@@ -59,10 +61,10 @@ ast_t *parser_parse_statement(parser_t *parser){
     switch (parser->current_token->type)
     {
         case TOKEN_ID:
-
             return parser_parse_id(parser);           
             break;
     }
+    
     return init_ast(AST_NOOP);
 }
 
@@ -77,7 +79,6 @@ ast_t *parser_parse_statements(parser_t *parser){
     ast_t *compound = init_ast(AST_COMPOUND);
     ast_t *ast_statement = parser_parse_statement(parser);
 
-    
     compound->compound_value = calloc(1, sizeof(struct AST_STRUCT));
     compound->compound_value[0] = ast_statement;
     compound->compound_size++;
@@ -192,8 +193,10 @@ ast_t *parser_parse_variable_definition(parser_t *parser){
 
     parser_eat(parser, TOKEN_ID); // Variable name
     parser_eat(parser, TOKEN_EQUALS); 
+    
 
     ast_t *var_definition_value = parser_parse_expression(parser);
+    
     
     ast_t *var_definition = init_ast(AST_VARIABLE_DEFINITION);
 
