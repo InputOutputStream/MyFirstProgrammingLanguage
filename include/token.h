@@ -12,6 +12,8 @@ typedef struct TOKEN_STRUCT
          TOKEN_COMMA,
          TOKEN_LPAREN,
          TOKEN_RPAREN,
+         TOKEN_LBRACE,
+         TOKEN_RBRACE,
          TOKEN_LSBRACE,
          TOKEN_RSBRACE,
          TOKEN_EOF,

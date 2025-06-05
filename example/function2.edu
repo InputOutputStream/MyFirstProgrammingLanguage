@@ -1,0 +1,7 @@
+function yo(name, surname)
+{
+    print(name);
+    print(surname);
+};
+
+yo("Test", "Tonton", "Tonton");

@@ -51,7 +51,7 @@ char *get_file(const char *file_path)
 
     if(strcmp(extension, "edu") != 0)
     {
-        fprintf(stderr, "ERROR: Unkown File Extension, The Correct Format is \".edu\"\n");
+        fprintf(stderr, "ERROR: Unkown File Type, The Correct Type is \".edu\"\n");
         exit(EXIT_FAILURE);
     }
 

@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "visitor.h"
+#include "scope.h"
 
 static ast_t* _builtin_print(visitor_t *visitor, struct AST_STRUCT** args, size_t args_size)
 {
@@ -27,8 +28,6 @@ static ast_t* _builtin_print(visitor_t *visitor, struct AST_STRUCT** args, size_
 visitor_t *init_visitor(void)
 {
     visitor_t *visitor = calloc(1, sizeof(struct VISITOR_STRUCT));
-    visitor->variable_definitions = (void *)0;
-    visitor->variable_definitions_size = 0;
 
     return visitor;
 }
@@ -37,6 +36,9 @@ ast_t *visitor_visit(visitor_t *visitor, ast_t *node){
 
     switch (node->type)
     {
+        case AST_FUNCTION_DEFINITION:
+            return visitor_visit_function_definition(visitor, node); 
+            break;
         case AST_VARIABLE_DEFINITION:
             return visitor_visit_variable_definition(visitor,node);
             break;
@@ -67,7 +69,7 @@ ast_t *visitor_visit_function_call(visitor_t *visitor, ast_t *node){
     if (node == NULL)
     {
        perror("NULL AST NODE ENCOUNTERED FUNCTION CALL VSISITOR");
-       exit(EXIT_FAILURE);
+       exit(EXIT_FAILURE );
     }
 
     if(strcmp(node->funtion_call_name, "print")==0)
@@ -75,45 +77,51 @@ ast_t *visitor_visit_function_call(visitor_t *visitor, ast_t *node){
         return _builtin_print(visitor, node->funtion_call_arguments, node->funtion_call_arguments_size);
     }
 
-    fprintf(stderr, "Undefined method: %s\n", node->funtion_call_name);
-    exit(1);
+    ast_t *function_def = scope_get_function_definition(node->scope, node->funtion_call_name);
+
+    if(function_def == (void *)0){
+        fprintf(stderr, "Undefined method: %s\n", node->funtion_call_name);
+        exit(1);
+    }
+
+    for(size_t i = 0; i<function_def->function_definition_args_size; i++)
+    {
+        ast_t *function_def_arg = function_def->function_definition_args[i];
+        ast_t *ast_function_call_args_value = node->funtion_call_arguments[i];
+
+        //Create variable definition
+        ast_t *variable_def = init_ast(AST_VARIABLE_DEFINITION);
+
+        //Copy to variable definition the corresponding function definition parameter name
+        variable_def->variable_definition_variable_name = calloc(strlen(function_def_arg->variable_name)+1, sizeof(char));
+        strcpy(variable_def->variable_definition_variable_name, function_def_arg->variable_name);
+
+        //Assign to function definition variable the function call value given
+        variable_def->variable_definition_value = ast_function_call_args_value;
+
+        //Add the created variable to function scope
+        scope_add_variable_definition(function_def->function_definition_body->scope,
+                                        variable_def);
+    }
+
+    return visitor_visit(visitor, function_def->function_definition_body);
+
 }
 
-ast_t *visitor_visit_variable_definition(visitor_t *visitor, ast_t *node){
-    if (node == NULL)
-    {
-       perror("NULL AST NODE ENCOUNTERED BY VARIABLE DEFINITION VISITOR");
-       exit(EXIT_FAILURE);
-    }
-
-    if(visitor->variable_definitions == (void *)0)
-    {
-        visitor->variable_definitions = calloc(1, sizeof(struct AST_STRUC*));
-        visitor->variable_definitions[0] = node;
-        visitor->variable_definitions_size++;
-    }   
-    else
-    {
-        visitor->variable_definitions_size++;
-        visitor->variable_definitions = realloc(visitor->variable_definitions, 
-            visitor->variable_definitions_size * sizeof(struct AST_STRUCT*));
-        if(!visitor->variable_definitions)
-        {
-            fprintf(stderr, "Realloc failed on viditor variable definitions\n");
-            for (size_t i = 0; i < visitor->variable_definitions_size; i++)
-            {
-                free(visitor->variable_definitions[i]);
-            }
-            free(visitor);
-            exit(EXIT_FAILURE);
-        }
-        visitor->variable_definitions[visitor->variable_definitions_size-1] = node;
-    }
-    
+ast_t *visitor_visit_function_definition(visitor_t __attribute_maybe_unused__ *visitor, ast_t* node)
+{
+    scope_add_function_definition(node->scope, node);
     return node;
 }
 
-ast_t *visitor_visit_string(visitor_t *visitor, ast_t *node){
+
+ast_t *visitor_visit_variable_definition(visitor_t __attribute_maybe_unused__ *visitor, ast_t *node){
+    scope_add_variable_definition(node->scope, node);
+    return node;
+}
+
+
+ast_t *visitor_visit_string(visitor_t __attribute_maybe_unused__ *visitor, ast_t *node){
     if (node == NULL)
     {
        perror("NULL AST NODE ENCOUNTERED BY STRING");
@@ -143,16 +151,16 @@ ast_t *visitor_visit_variable(visitor_t *visitor, ast_t *node){
        perror("NULL AST VISITOR ENCOUNTERED");
        exit(EXIT_FAILURE);
     }
-    for (size_t i = 0; i < visitor->variable_definitions_size; i++)
+
+   ast_t *variable_definition = scope_get_variable_definition(node->scope, node->variable_name);
+
+
+    if(variable_definition == (void *)0)
     {
-        ast_t *var_def = visitor->variable_definitions[i];
-        if(strcmp(var_def->variable_definition_variable_name, node->variable_name)==0)
-        {
-            return visitor_visit(visitor, var_def->variable_definition_value);
-        }
+        fprintf(stderr,"Undefinied variable `%s`\n", node->variable_name);
+        exit(EXIT_FAILURE);
     }
-    
-    fprintf(stderr,"Undefinied variable %s\n", node->variable_name);
-    exit(EXIT_FAILURE);
-    return node;
+
+    return visitor_visit(visitor, variable_definition->variable_definition_value);
+
 }

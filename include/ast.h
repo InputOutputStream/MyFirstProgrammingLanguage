@@ -7,6 +7,7 @@ typedef struct AST_STRUCT
 {
     enum{
         AST_FUNCTION_CALL,
+        AST_FUNCTION_DEFINITION,
         AST_VARIABLE_DEFINITION,
         AST_VARIABLE,     
         AST_STRING,
@@ -14,10 +15,19 @@ typedef struct AST_STRUCT
         AST_NOOP,
     }type;
 
+    /**Scope  */
+    struct SCOPE_STRUCT *scope;
+
     /**Ast Variable definition */
     char *variable_definition_variable_name;
     struct AST_STRUCT* variable_definition_value;
 
+    /**AST function definition */
+    char *funtion_definition_name;
+    struct AST_STRUCT *function_definition_body;
+    struct AST_STRUCT **function_definition_args;
+    size_t function_definition_args_size;
+    
     /**Ast variable */
     char *variable_name;
 

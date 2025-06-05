@@ -102,6 +102,12 @@ token_t *lexer_get_next_token(lexer_t *lexer)
             case ')':
                 return _lexer_advance_with_token(lexer, init_token(TOKEN_RPAREN, lexer_get_current_char_as_string(lexer)));
                 break;
+            case '{':
+                return _lexer_advance_with_token(lexer, init_token(TOKEN_LBRACE, lexer_get_current_char_as_string(lexer)));
+                break;
+            case '}':
+                return _lexer_advance_with_token(lexer, init_token(TOKEN_RBRACE, lexer_get_current_char_as_string(lexer)));
+           
             case '[':
                 return _lexer_advance_with_token(lexer, init_token(TOKEN_LSBRACE, lexer_get_current_char_as_string(lexer)));
                 break;
